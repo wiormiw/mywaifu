@@ -13,17 +13,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import static com.silvermaiden.mywaifu.common.constants.ErrorCode.*;
 import static com.silvermaiden.mywaifu.common.constants.HTTPConstant.DEFAULT_FAILED_MESSAGE;
+import static com.silvermaiden.mywaifu.common.constants.ValidationConstant.DEFAULT_VALIDATION_ERROR_MESSAGE;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    // Handle @Valid exception in controller request
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         log.error("MethodArgumentNotValidException: {}", ex.getMessage());
         String firstErrorMessage = ex.getBindingResult().getAllErrors().stream()
                 .findFirst()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .orElse("Validation error");
+                .orElse(DEFAULT_VALIDATION_ERROR_MESSAGE);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseDTO.error(firstErrorMessage, BAD_REQUEST));
     }
 
