@@ -1,6 +1,8 @@
 package com.silvermaiden.mywaifu.models.entities;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,6 +15,7 @@ import java.util.Set;
         attributeNodes = @NamedAttributeNode("roles")
 )
 @Table(name = "users")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
