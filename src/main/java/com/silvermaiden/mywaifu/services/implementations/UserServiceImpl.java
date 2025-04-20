@@ -77,6 +77,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    @Override
     @Transactional
     public AuthResponseDTO register(UserCreateDTO req) {
         User savedUser = createUser(req);
@@ -88,6 +89,7 @@ public class UserServiceImpl implements UserService {
         return new AuthResponseDTO(accessTokenResponse.token(), refreshToken, accessTokenResponse.expiresAt());
     }
 
+    @Override
     public AuthResponseDTO login(AuthRequestDTO req) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -111,6 +113,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
     @Transactional(readOnly = true)
     public AuthResponseDTO refreshToken(String refreshToken) {
         if (!jwtService.isTokenValid(refreshToken)) {
@@ -128,24 +131,28 @@ public class UserServiceImpl implements UserService {
                 user.getUsername(),
                 user.getRoles());
         String newRefreshToken = jwtService.generateRefreshToken(user.getUsername());
-        return new AuthResponseDTO(accessTokenResponse.token(), refreshToken, accessTokenResponse.expiresAt());
+        return new AuthResponseDTO(accessTokenResponse.token(), newRefreshToken, accessTokenResponse.expiresAt());
     }
 
+    @Override
     public void logout() {
         SecurityContextHolder.clearContext();
     }
 
     // Normal user management
+    @Override
     @Transactional
     public Long create(UserCreateDTO req) {
         return createUser(req).getId();
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<UserDTO> getAll() {
         return userMapper.toDtoList(userRepository.findAll());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public UserDTO getById(Long id) {
         return userMapper.toDto(userRepository.findById(id)
@@ -155,6 +162,7 @@ public class UserServiceImpl implements UserService {
                 }));
     }
 
+    @Override
     @Transactional
     public Long update(Long id, UserUpdateDTO req) {
         User user = userRepository.findById(id)
@@ -186,6 +194,7 @@ public class UserServiceImpl implements UserService {
         return updatedUser.getId();
     }
 
+    @Override
     @Transactional
     public void delete(Long id) {
         if (!userRepository.existsById(id)) {
@@ -197,6 +206,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // Paged result
+    @Override
     @Transactional(readOnly = true)
     public PagedResponseDTO<UserDTO> getPaged(int page, int size) {
         if (page < 0 || size <= 0) {
@@ -209,6 +219,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toPagedResponse(userRepository.findAll(pageable));
     }
 
+    @Override
     @Transactional(readOnly = true)
     public PagedResponseDTO<UserDTO> getPagedSorted(int page, int size, String sortBy, String sortDirection) {
         if (page < 0 || size <= 0) {
@@ -223,6 +234,7 @@ public class UserServiceImpl implements UserService {
 
     // Public
     // Get current user
+    @Override
     @Transactional(readOnly = true)
     public UserDTO getCurrentUser() {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -232,6 +244,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // Update current user
+    @Override
     @Transactional
     public Long updateCurrentUser(UserUpdateDTO req) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
