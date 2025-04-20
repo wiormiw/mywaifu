@@ -5,9 +5,8 @@ import com.silvermaiden.mywaifu.configurations.security.jwt.JwtService;
 import com.silvermaiden.mywaifu.models.dtos.auth.AuthRequestDTO;
 import com.silvermaiden.mywaifu.models.dtos.auth.AuthResponseDTO;
 import com.silvermaiden.mywaifu.models.dtos.meta.PagedResponseDTO;
-import com.silvermaiden.mywaifu.models.dtos.user.UserCreateDTO;
+import com.silvermaiden.mywaifu.models.dtos.user.UserRequestDTO;
 import com.silvermaiden.mywaifu.models.dtos.user.UserDTO;
-import com.silvermaiden.mywaifu.models.dtos.user.UserUpdateDTO;
 import com.silvermaiden.mywaifu.models.entities.CustomUserDetails;
 import com.silvermaiden.mywaifu.models.entities.User;
 import com.silvermaiden.mywaifu.models.mappers.UserMapper;
@@ -57,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     // Auth related
     @Transactional
-    private User createUser(UserCreateDTO req) {
+    private User createUser(UserRequestDTO req) {
         if (userRepository.existsByUsername(req.username())) {
             log.error("createUser: {}", USER_EXISTS);
             throw new IllegalArgumentException(USER_EXISTS);
@@ -79,7 +78,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public AuthResponseDTO register(UserCreateDTO req) {
+    public AuthResponseDTO register(UserRequestDTO req) {
         User savedUser = createUser(req);
 
         JwtService.TokenResponse accessTokenResponse = jwtService.generateAccessToken(
@@ -142,7 +141,7 @@ public class UserServiceImpl implements UserService {
     // Normal user management
     @Override
     @Transactional
-    public Long create(UserCreateDTO req) {
+    public Long create(UserRequestDTO req) {
         return createUser(req).getId();
     }
 
@@ -164,7 +163,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public Long update(Long id, UserUpdateDTO req) {
+    public Long update(Long id, UserRequestDTO req) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("update: {}", USER_NOT_FOUND);
@@ -246,7 +245,7 @@ public class UserServiceImpl implements UserService {
     // Update current user
     @Override
     @Transactional
-    public Long updateCurrentUser(UserUpdateDTO req) {
+    public Long updateCurrentUser(UserRequestDTO req) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user = userDetails.getUser();

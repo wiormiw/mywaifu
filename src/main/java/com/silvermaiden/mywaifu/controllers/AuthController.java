@@ -3,7 +3,7 @@ package com.silvermaiden.mywaifu.controllers;
 import com.silvermaiden.mywaifu.models.dtos.auth.AuthRequestDTO;
 import com.silvermaiden.mywaifu.models.dtos.auth.AuthResponseDTO;
 import com.silvermaiden.mywaifu.models.dtos.http.ApiResponseDTO;
-import com.silvermaiden.mywaifu.models.dtos.user.UserCreateDTO;
+import com.silvermaiden.mywaifu.models.dtos.user.UserRequestDTO;
 import com.silvermaiden.mywaifu.services.implementations.UserServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> register(@Valid @RequestBody UserCreateDTO req) {
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> register(@Valid @RequestBody UserRequestDTO req) {
         AuthResponseDTO res = userServiceImpl.register(req);
         return ResponseEntity.ok(ApiResponseDTO.success(res));
     }

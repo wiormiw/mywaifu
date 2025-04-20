@@ -2,7 +2,7 @@ package com.silvermaiden.mywaifu.controllers;
 
 import com.silvermaiden.mywaifu.models.dtos.http.ApiResponseDTO;
 import com.silvermaiden.mywaifu.models.dtos.user.UserDTO;
-import com.silvermaiden.mywaifu.models.dtos.user.UserUpdateDTO;
+import com.silvermaiden.mywaifu.models.dtos.user.UserRequestDTO;
 import com.silvermaiden.mywaifu.services.implementations.UserServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ public class PublicUserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponseDTO<Long>> update(@Valid @RequestBody UserUpdateDTO req) {
+    public ResponseEntity<ApiResponseDTO<Long>> update(@Valid @RequestBody UserRequestDTO req) {
         Long updatedId = userServiceImpl.updateCurrentUser(req);
         return ResponseEntity.ok(ApiResponseDTO.success(updatedId));
     }

@@ -2,9 +2,8 @@ package com.silvermaiden.mywaifu.controllers;
 
 import com.silvermaiden.mywaifu.models.dtos.http.ApiResponseDTO;
 import com.silvermaiden.mywaifu.models.dtos.meta.PagedResponseDTO;
-import com.silvermaiden.mywaifu.models.dtos.user.UserCreateDTO;
+import com.silvermaiden.mywaifu.models.dtos.user.UserRequestDTO;
 import com.silvermaiden.mywaifu.models.dtos.user.UserDTO;
-import com.silvermaiden.mywaifu.models.dtos.user.UserUpdateDTO;
 import com.silvermaiden.mywaifu.services.implementations.UserServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponseDTO<Long>> create(@Valid @RequestBody UserCreateDTO req) {
+    public ResponseEntity<ApiResponseDTO<Long>> create(@Valid @RequestBody UserRequestDTO req) {
         Long id = userServiceImpl.create(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseDTO.success(id));
     }
@@ -43,7 +42,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponseDTO<Long>> update(@PathVariable Long id, @Valid @RequestBody UserUpdateDTO req) {
+    public ResponseEntity<ApiResponseDTO<Long>> update(@PathVariable Long id, @Valid @RequestBody UserRequestDTO req) {
         Long updatedId = userServiceImpl.update(id, req);
         return ResponseEntity.ok(ApiResponseDTO.success(updatedId));
     }
