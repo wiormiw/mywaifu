@@ -1,6 +1,8 @@
 package com.silvermaiden.mywaifu.models.entities;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
@@ -16,6 +18,8 @@ import java.util.Set;
 )
 @Table(name = "users")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@ToString(exclude = "roles")
+@EqualsAndHashCode
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
