@@ -9,17 +9,17 @@ import com.silvermaiden.mywaifu.models.dtos.user.UserDTO;
 import java.util.List;
 
 public interface UserService {
-    public AuthResponseDTO register(UserRequestDTO req);
-    public AuthResponseDTO login(AuthRequestDTO req);
-    public AuthResponseDTO refreshToken(String refreshToken);
-    public void logout();
-    public Long create(UserRequestDTO req);
-    public List<UserDTO> getAll();
-    public UserDTO getById(Long id);
-    public Long update(Long id, UserRequestDTO req);
-    public void delete(Long id);
-    public PagedResponseDTO<UserDTO> getPaged(int page, int size);
-    public PagedResponseDTO<UserDTO> getPagedSorted(int page, int size, String sortBy, String sortDirection);
-    public UserDTO getCurrentUser();
-    public Long updateCurrentUser(UserRequestDTO req);
+    AuthResponseDTO register(UserRequestDTO req);
+    AuthResponseDTO login(AuthRequestDTO req);
+    AuthResponseDTO refreshToken(String refreshToken);
+    void logout();
+    Long create(UserRequestDTO req);
+    List<UserDTO> getAll();
+    UserDTO getById(Long id);
+    Long update(Long id, UserRequestDTO req);
+    void delete(Long id);
+    PagedResponseDTO<UserDTO> getPaged(int page, int size);
+    PagedResponseDTO<UserDTO> getPagedSorted(int page, int size, String sortBy, String sortDirection);
+    UserDTO getCurrentUser();
+    Long updateCurrentUser(UserRequestDTO req);
 }
