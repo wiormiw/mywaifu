@@ -6,6 +6,7 @@ import com.silvermaiden.mywaifu.models.dtos.user.UserRequestDTO;
 import com.silvermaiden.mywaifu.models.dtos.user.UserDTO;
 import com.silvermaiden.mywaifu.services.implementations.UserServiceImpl;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -66,6 +67,7 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
+            @Pattern(regexp = "ASC|DESC", flags = Pattern.Flag.CASE_INSENSITIVE)
             @RequestParam(defaultValue = "ASC") String sortDirection) {
         PagedResponseDTO<UserDTO> res = this.userServiceImpl.getPagedSorted(page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ApiResponseDTO.success(res));
