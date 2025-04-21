@@ -3,6 +3,7 @@ package com.silvermaiden.mywaifu.common.constants;
 public class ErrorMessage {
     // Common
     public static final String INVALID_SIZE_OR_PAGE = "Invalid page or size parameter!";
+    public static final String INVALID_SORT_DIRECTION  = "Invalid sort direction parameter (use 'ASC OR 'DESC')";
 
     // User module
     public static final String USER_PASSWORD_WRONG = "Username or password is wrong!";
