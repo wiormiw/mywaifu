@@ -193,7 +193,7 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         if (!userRepository.existsById(id)) {
             log.error("delete: {}", USER_NOT_FOUND);
-           throw new EntityNotFoundException(USER_NOT_FOUND);
+            throw new EntityNotFoundException(USER_NOT_FOUND);
         }
 
         userRepository.deleteById(id);
