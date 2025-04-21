@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.silvermaiden.mywaifu.common.constants.ErrorMessage.*;
 import static com.silvermaiden.mywaifu.common.constants.SecurityConstant.*;
@@ -55,27 +56,6 @@ public class UserServiceImpl implements UserService {
     }
 
     // Auth related
-    @Transactional
-    private User createUser(UserRequestDTO req) {
-        if (userRepository.existsByUsername(req.username())) {
-            log.error("createUser: {}", USER_EXISTS);
-            throw new IllegalArgumentException(USER_EXISTS);
-        }
-
-        if (userRepository.existsByEmail(req.email())) {
-            log.error("createUser: {}", EMAIL_EXISTS);
-            throw new IllegalArgumentException(EMAIL_EXISTS);
-        }
-
-        User user = new User();
-        user.setUsername(req.username());
-        user.setPassword(passwordEncoder.encode(req.password()));
-        user.setName(req.name());
-        user.setEmail(req.email());
-        user.setRoles(DEFAULT_ROLE);
-        return userRepository.save(user);
-    }
-
     @Override
     @Transactional
     public AuthResponseDTO register(UserRequestDTO req) {
@@ -121,16 +101,25 @@ public class UserServiceImpl implements UserService {
         }
 
         String username = jwtService.extractUsername(refreshToken);
-        User user = userRepository.findByUsername(username)
+        return userRepository.findByUsername(username)
+                .map(user -> {
+                    JwtService.TokenResponse accessTokenResponse = jwtService.generateAccessToken(
+                            user.getUsername(),
+                            user.getRoles()
+                    );
+
+                    String newRefreshToken = jwtService.generateRefreshToken(user.getUsername());
+
+                    return new AuthResponseDTO(
+                            accessTokenResponse.token(),
+                            newRefreshToken,
+                            accessTokenResponse.expiresAt()
+                    );
+                })
                 .orElseThrow(() -> {
                     log.error("refreshToken: {}", USER_NOT_FOUND);
                     return new EntityNotFoundException(USER_NOT_FOUND);
                 });
-        JwtService.TokenResponse accessTokenResponse = jwtService.generateAccessToken(
-                user.getUsername(),
-                user.getRoles());
-        String newRefreshToken = jwtService.generateRefreshToken(user.getUsername());
-        return new AuthResponseDTO(accessTokenResponse.token(), newRefreshToken, accessTokenResponse.expiresAt());
     }
 
     @Override
@@ -164,33 +153,39 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public Long update(Long id, UserRequestDTO req) {
-        User user = userRepository.findById(id)
+        return userRepository.findById(id)
+                .map(user -> {
+                    Optional.ofNullable(req.username())
+                            .filter(username -> !username.equals(user.getUsername()))
+                            .ifPresent(username -> {
+                                if (userRepository.existsByUsername(username)) {
+                                    log.error("update: {}", USERNAME_EXISTS);
+                                    throw new IllegalArgumentException(USERNAME_EXISTS);
+                                }
+                                user.setUsername(username);
+                            });
+
+                    Optional.ofNullable(req.name())
+                            .ifPresent(user::setName);
+
+                    Optional.ofNullable(req.password())
+                            .ifPresent(password -> user.setPassword(passwordEncoder.encode(password)));
+
+                    Optional.ofNullable(req.email())
+                            .ifPresent(email -> {
+                                if (userRepository.existsByEmail(email)) {
+                                    log.error("update: {}", EMAIL_EXISTS);
+                                    throw new IllegalArgumentException(EMAIL_EXISTS);
+                                }
+                                user.setEmail(email);
+                            });
+
+                    return userRepository.save(user).getId();
+                })
                 .orElseThrow(() -> {
-                    log.error("update: {}", USER_NOT_FOUND);
-                    return new EntityNotFoundException(USER_NOT_FOUND);
+                   log.error("update: {}", USER_NOT_FOUND);
+                   return new EntityNotFoundException(USER_NOT_FOUND);
                 });
-
-        if (req.username() != null && !req.username().equals(user.getUsername())) {
-           if (userRepository.existsByUsername(req.username())) {
-               log.error("update: {}", USERNAME_EXISTS);
-               throw new IllegalArgumentException(USERNAME_EXISTS);
-           }
-           user.setUsername(req.username());
-        }
-        if (req.name() != null) user.setName(req.name());
-        if (req.password() != null) {
-            user.setPassword(passwordEncoder.encode(req.password()));
-        }
-        if (req.email() != null && !req.email().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(req.email())) {
-                log.error("update: {}", EMAIL_EXISTS);
-                throw new IllegalArgumentException(EMAIL_EXISTS);
-            }
-            user.setEmail(req.email());
-        }
-        User updatedUser = userRepository.save(user);
-
-        return updatedUser.getId();
     }
 
     @Override
@@ -249,27 +244,56 @@ public class UserServiceImpl implements UserService {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user = userDetails.getUser();
-        if (req.username() != null && !req.username().equals(user.getUsername())) {
-            if (userRepository.existsByUsername(req.username())) {
-                log.error("updateCurrentUser: {}", USERNAME_EXISTS);
-                throw new IllegalArgumentException(USERNAME_EXISTS);
-            }
-            user.setUsername(req.username());
-        }
-        if (req.name() != null) {
-            user.setName(req.name());
-        }
-        if (req.password() != null) {
-            user.setPassword(passwordEncoder.encode(req.password()));
-        }
-        if (req.email() != null && !req.email().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(req.email())) {
-                log.error("updateCurrentUser: {}", EMAIL_EXISTS);
-                throw new IllegalArgumentException(EMAIL_EXISTS);
-            }
-            user.setEmail(req.email());
-        }
+
+        Optional.ofNullable(req.username())
+                .filter(username -> !username.equals(user.getUsername()))
+                .ifPresent(username -> {
+                    if (userRepository.existsByUsername(username)) {
+                        log.error("updateCurrentUser: {}", USERNAME_EXISTS);
+                        throw new IllegalArgumentException(USERNAME_EXISTS);
+                    }
+                    user.setUsername(username);
+                });
+
+        Optional.ofNullable(req.name())
+                .ifPresent(user::setName);
+
+        Optional.ofNullable(req.password())
+                .ifPresent(password -> user.setPassword(passwordEncoder.encode(password)));
+
+        Optional.ofNullable(req.email())
+                .filter(email -> !email.equals(user.getEmail()))
+                .ifPresent(email -> {
+                    if (userRepository.existsByEmail(email)) {
+                        log.error("updateCurrentUser: {}", EMAIL_EXISTS);
+                        throw new IllegalArgumentException(EMAIL_EXISTS);
+                    }
+                    user.setEmail(email);
+                });
+
         User updatedUser = userRepository.save(user);
         return updatedUser.getId();
+    }
+
+    // Create User wrapper
+    @Transactional
+    private User createUser(UserRequestDTO req) {
+        if (userRepository.existsByUsername(req.username())) {
+            log.error("createUser: {}", USER_EXISTS);
+            throw new IllegalArgumentException(USER_EXISTS);
+        }
+
+        if (userRepository.existsByEmail(req.email())) {
+            log.error("createUser: {}", EMAIL_EXISTS);
+            throw new IllegalArgumentException(EMAIL_EXISTS);
+        }
+
+        User user = new User();
+        user.setUsername(req.username());
+        user.setPassword(passwordEncoder.encode(req.password()));
+        user.setName(req.name());
+        user.setEmail(req.email());
+        user.setRoles(DEFAULT_ROLE);
+        return userRepository.save(user);
     }
 }
