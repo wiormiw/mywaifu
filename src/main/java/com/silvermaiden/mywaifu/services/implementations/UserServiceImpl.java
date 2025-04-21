@@ -221,7 +221,15 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException(INVALID_SIZE_OR_PAGE);
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        if (!sortDirection.equalsIgnoreCase("ASC") && !sortDirection.equalsIgnoreCase("DESC")) {
+            log.error("getPagedSorted: {}", INVALID_SORT_DIRECTION);
+            throw new IllegalArgumentException(INVALID_SORT_DIRECTION);
+        }
+
+        Sort.Direction direction;
+        direction = Sort.Direction.fromString(sortDirection);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         return this.userMapper.toPagedResponse(userRepository.findAll(pageable));
     }
