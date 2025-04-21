@@ -1,7 +1,6 @@
 package com.silvermaiden.mywaifu.services.implementations;
 
 import com.silvermaiden.mywaifu.models.entities.CustomUserDetails;
-import com.silvermaiden.mywaifu.models.entities.User;
 import com.silvermaiden.mywaifu.repositories.UserRepository;
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,9 +22,8 @@ public class UserDetailsImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
+        return userRepository.findByUsername(username)
+                .map(CustomUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
-
-        return new CustomUserDetails(user);
     }
 }
