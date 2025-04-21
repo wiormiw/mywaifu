@@ -21,13 +21,13 @@ public class PublicUserController {
 
     @GetMapping
     public ResponseEntity<ApiResponseDTO<UserDTO>> getMyDetail() {
-        UserDTO user = userServiceImpl.getCurrentUser();
+        UserDTO user = this.userServiceImpl.getCurrentUser();
         return ResponseEntity.ok(ApiResponseDTO.success(user));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseDTO<Long>> update(@Valid @RequestBody UserRequestDTO req) {
-        Long updatedId = userServiceImpl.updateCurrentUser(req);
+        Long updatedId = this.userServiceImpl.updateCurrentUser(req);
         return ResponseEntity.ok(ApiResponseDTO.success(updatedId));
     }
 }

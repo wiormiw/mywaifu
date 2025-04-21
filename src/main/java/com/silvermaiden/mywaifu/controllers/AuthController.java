@@ -23,25 +23,25 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> register(@Valid @RequestBody UserRequestDTO req) {
-        AuthResponseDTO res = userServiceImpl.register(req);
+        AuthResponseDTO res = this.userServiceImpl.register(req);
         return ResponseEntity.ok(ApiResponseDTO.success(res));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> login(@Valid @RequestBody AuthRequestDTO req) {
-        AuthResponseDTO res = userServiceImpl.login(req);
+        AuthResponseDTO res = this.userServiceImpl.login(req);
         return ResponseEntity.ok(ApiResponseDTO.success(res));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> refreshToken(@RequestBody String refreshToken) {
-        AuthResponseDTO res = userServiceImpl.refreshToken(refreshToken);
+        AuthResponseDTO res = this.userServiceImpl.refreshToken(refreshToken);
         return ResponseEntity.ok(ApiResponseDTO.success(res));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponseDTO<Void>> logout() {
-        userServiceImpl.logout();
+        this.userServiceImpl.logout();
         return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
 }

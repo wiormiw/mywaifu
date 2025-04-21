@@ -59,12 +59,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public AuthResponseDTO register(UserRequestDTO req) {
-        User savedUser = createUser(req);
+        User savedUser = this.createUser(req);
 
-        JwtService.TokenResponse accessTokenResponse = jwtService.generateAccessToken(
+        JwtService.TokenResponse accessTokenResponse = this.jwtService.generateAccessToken(
                 savedUser.getUsername(),
                 savedUser.getRoles());
-        String refreshToken = jwtService.generateRefreshToken(savedUser.getUsername());
+        String refreshToken = this.jwtService.generateRefreshToken(savedUser.getUsername());
         return new AuthResponseDTO(accessTokenResponse.token(), refreshToken, accessTokenResponse.expiresAt());
     }
 
@@ -78,11 +78,11 @@ public class UserServiceImpl implements UserService {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             User user = userDetails.getUser();
 
-            JwtService.TokenResponse accessTokenResponse = jwtService.generateAccessToken(
+            JwtService.TokenResponse accessTokenResponse = this.jwtService.generateAccessToken(
                     user.getUsername(),
                     user.getRoles()
             );
-            String refreshToken = jwtService.generateRefreshToken(user.getUsername());
+            String refreshToken = this.jwtService.generateRefreshToken(user.getUsername());
 
             return new AuthResponseDTO(accessTokenResponse.token(), refreshToken, accessTokenResponse.expiresAt());
 
@@ -95,20 +95,20 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public AuthResponseDTO refreshToken(String refreshToken) {
-        if (!jwtService.isTokenValid(refreshToken)) {
+        if (!this.jwtService.isTokenValid(refreshToken)) {
             log.error("refreshToken: {}", INVALID_TOKEN_MESSAGE);
             throw new IllegalArgumentException(INVALID_TOKEN_MESSAGE);
         }
 
-        String username = jwtService.extractUsername(refreshToken);
-        return userRepository.findByUsername(username)
+        String username = this.jwtService.extractUsername(refreshToken);
+        return this.userRepository.findByUsername(username)
                 .map(user -> {
-                    JwtService.TokenResponse accessTokenResponse = jwtService.generateAccessToken(
+                    JwtService.TokenResponse accessTokenResponse = this.jwtService.generateAccessToken(
                             user.getUsername(),
                             user.getRoles()
                     );
 
-                    String newRefreshToken = jwtService.generateRefreshToken(user.getUsername());
+                    String newRefreshToken = this.jwtService.generateRefreshToken(user.getUsername());
 
                     return new AuthResponseDTO(
                             accessTokenResponse.token(),
@@ -131,19 +131,19 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public Long create(UserRequestDTO req) {
-        return createUser(req).getId();
+        return this.createUser(req).getId();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserDTO> getAll() {
-        return userMapper.toDtoList(userRepository.findAll());
+        return this.userMapper.toDtoList(this.userRepository.findAll());
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserDTO getById(Long id) {
-        return userMapper.toDto(userRepository.findById(id)
+        return this.userMapper.toDto(this.userRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("getById: {}", USER_NOT_FOUND);
                     return new EntityNotFoundException(USER_NOT_FOUND);
@@ -153,12 +153,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public Long update(Long id, UserRequestDTO req) {
-        return userRepository.findById(id)
+        return this.userRepository.findById(id)
                 .map(user -> {
                     Optional.ofNullable(req.username())
                             .filter(username -> !username.equals(user.getUsername()))
                             .ifPresent(username -> {
-                                if (userRepository.existsByUsername(username)) {
+                                if (this.userRepository.existsByUsername(username)) {
                                     log.error("update: {}", USERNAME_EXISTS);
                                     throw new IllegalArgumentException(USERNAME_EXISTS);
                                 }
@@ -169,18 +169,18 @@ public class UserServiceImpl implements UserService {
                             .ifPresent(user::setName);
 
                     Optional.ofNullable(req.password())
-                            .ifPresent(password -> user.setPassword(passwordEncoder.encode(password)));
+                            .ifPresent(password -> user.setPassword(this.passwordEncoder.encode(password)));
 
                     Optional.ofNullable(req.email())
                             .ifPresent(email -> {
-                                if (userRepository.existsByEmail(email)) {
+                                if (this.userRepository.existsByEmail(email)) {
                                     log.error("update: {}", EMAIL_EXISTS);
                                     throw new IllegalArgumentException(EMAIL_EXISTS);
                                 }
                                 user.setEmail(email);
                             });
 
-                    return userRepository.save(user).getId();
+                    return this.userRepository.save(user).getId();
                 })
                 .orElseThrow(() -> {
                    log.error("update: {}", USER_NOT_FOUND);
@@ -191,12 +191,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
+        if (!this.userRepository.existsById(id)) {
             log.error("delete: {}", USER_NOT_FOUND);
             throw new EntityNotFoundException(USER_NOT_FOUND);
         }
 
-        userRepository.deleteById(id);
+        this.userRepository.deleteById(id);
     }
 
     // Paged result
@@ -210,7 +210,7 @@ public class UserServiceImpl implements UserService {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        return userMapper.toPagedResponse(userRepository.findAll(pageable));
+        return this.userMapper.toPagedResponse(userRepository.findAll(pageable));
     }
 
     @Override
@@ -223,7 +223,7 @@ public class UserServiceImpl implements UserService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
-        return userMapper.toPagedResponse(userRepository.findAll(pageable));
+        return this.userMapper.toPagedResponse(userRepository.findAll(pageable));
     }
 
     // Public
@@ -234,7 +234,7 @@ public class UserServiceImpl implements UserService {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user = userDetails.getUser();
-        return userMapper.toDto(user);
+        return this.userMapper.toDto(user);
     }
 
     // Update current user
@@ -248,7 +248,7 @@ public class UserServiceImpl implements UserService {
         Optional.ofNullable(req.username())
                 .filter(username -> !username.equals(user.getUsername()))
                 .ifPresent(username -> {
-                    if (userRepository.existsByUsername(username)) {
+                    if (this.userRepository.existsByUsername(username)) {
                         log.error("updateCurrentUser: {}", USERNAME_EXISTS);
                         throw new IllegalArgumentException(USERNAME_EXISTS);
                     }
@@ -259,41 +259,41 @@ public class UserServiceImpl implements UserService {
                 .ifPresent(user::setName);
 
         Optional.ofNullable(req.password())
-                .ifPresent(password -> user.setPassword(passwordEncoder.encode(password)));
+                .ifPresent(password -> user.setPassword(this.passwordEncoder.encode(password)));
 
         Optional.ofNullable(req.email())
                 .filter(email -> !email.equals(user.getEmail()))
                 .ifPresent(email -> {
-                    if (userRepository.existsByEmail(email)) {
+                    if (this.userRepository.existsByEmail(email)) {
                         log.error("updateCurrentUser: {}", EMAIL_EXISTS);
                         throw new IllegalArgumentException(EMAIL_EXISTS);
                     }
                     user.setEmail(email);
                 });
 
-        User updatedUser = userRepository.save(user);
+        User updatedUser = this.userRepository.save(user);
         return updatedUser.getId();
     }
 
     // Create User wrapper
     @Transactional
     private User createUser(UserRequestDTO req) {
-        if (userRepository.existsByUsername(req.username())) {
+        if (this.userRepository.existsByUsername(req.username())) {
             log.error("createUser: {}", USER_EXISTS);
             throw new IllegalArgumentException(USER_EXISTS);
         }
 
-        if (userRepository.existsByEmail(req.email())) {
+        if (this.userRepository.existsByEmail(req.email())) {
             log.error("createUser: {}", EMAIL_EXISTS);
             throw new IllegalArgumentException(EMAIL_EXISTS);
         }
 
         User user = new User();
         user.setUsername(req.username());
-        user.setPassword(passwordEncoder.encode(req.password()));
+        user.setPassword(this.passwordEncoder.encode(req.password()));
         user.setName(req.name());
         user.setEmail(req.email());
         user.setRoles(DEFAULT_ROLE);
-        return userRepository.save(user);
+        return this.userRepository.save(user);
     }
 }

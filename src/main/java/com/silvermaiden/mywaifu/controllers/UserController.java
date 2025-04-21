@@ -25,31 +25,31 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<ApiResponseDTO<Long>> create(@Valid @RequestBody UserRequestDTO req) {
-        Long id = userServiceImpl.create(req);
+        Long id = this.userServiceImpl.create(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseDTO.success(id));
     }
 
     @GetMapping
     public ResponseEntity<ApiResponseDTO<List<UserDTO>>> getAll() {
-        List<UserDTO> users = userServiceImpl.getAll();
+        List<UserDTO> users = this.userServiceImpl.getAll();
         return ResponseEntity.ok(ApiResponseDTO.success(users));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponseDTO<UserDTO>> getById(@PathVariable Long id) {
-        UserDTO user = userServiceImpl.getById(id);
+        UserDTO user = this.userServiceImpl.getById(id);
         return ResponseEntity.ok(ApiResponseDTO.success(user));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponseDTO<Long>> update(@PathVariable Long id, @Valid @RequestBody UserRequestDTO req) {
-        Long updatedId = userServiceImpl.update(id, req);
+        Long updatedId = this.userServiceImpl.update(id, req);
         return ResponseEntity.ok(ApiResponseDTO.success(updatedId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseDTO<Void>> delete(@PathVariable Long id) {
-        userServiceImpl.delete(id);
+        this.userServiceImpl.delete(id);
         return ResponseEntity.ok(ApiResponseDTO.success(null));
     }
 
@@ -57,7 +57,7 @@ public class UserController {
     public ResponseEntity<ApiResponseDTO<PagedResponseDTO<UserDTO>>> getPaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PagedResponseDTO<UserDTO> res = userServiceImpl.getPaged(page, size);
+        PagedResponseDTO<UserDTO> res = this.userServiceImpl.getPaged(page, size);
         return ResponseEntity.ok(ApiResponseDTO.success(res));
     }
 
@@ -67,7 +67,7 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection) {
-        PagedResponseDTO<UserDTO> res = userServiceImpl.getPagedSorted(page, size, sortBy, sortDirection);
+        PagedResponseDTO<UserDTO> res = this.userServiceImpl.getPagedSorted(page, size, sortBy, sortDirection);
         return ResponseEntity.ok(ApiResponseDTO.success(res));
     }
 }

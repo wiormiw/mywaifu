@@ -1,6 +1,5 @@
 package com.silvermaiden.mywaifu.configurations.security.filters;
 
-import com.silvermaiden.mywaifu.configurations.cache.RedisService;
 import com.silvermaiden.mywaifu.configurations.security.jwt.JwtService;
 import com.silvermaiden.mywaifu.services.implementations.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
@@ -9,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -17,8 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.silvermaiden.mywaifu.common.constants.SecurityConstant.AUTH_HEADER_PREFIX;
 
@@ -47,17 +43,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(AUTH_HEADER_PREFIX.length());
-        if (!jwtService.isTokenValid(token)) {
+        if (!this.jwtService.isTokenValid(token)) {
             filterChain.doFilter(req, res);
             return;
         }
 
-        String username = jwtService.extractUsername(token);
+        String username = this.jwtService.extractUsername(token);
 
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userDetails,

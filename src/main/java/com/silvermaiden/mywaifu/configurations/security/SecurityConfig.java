@@ -19,7 +19,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static com.silvermaiden.mywaifu.common.constants.SecurityConstant.ALLOWED_ORIGINS;
@@ -55,10 +54,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(customAuthenticationEntryPoint)
-                        .accessDeniedHandler(customAccessDeniedHandler)
+                        .authenticationEntryPoint(this.customAuthenticationEntryPoint)
+                        .accessDeniedHandler(this.customAccessDeniedHandler)
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(this.jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
