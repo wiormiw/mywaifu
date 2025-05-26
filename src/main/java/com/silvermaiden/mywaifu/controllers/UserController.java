@@ -1,6 +1,7 @@
 package com.silvermaiden.mywaifu.controllers;
 
 import com.silvermaiden.mywaifu.models.dtos.http.ApiResponseDTO;
+import com.silvermaiden.mywaifu.models.dtos.meta.PagedRequestDTO;
 import com.silvermaiden.mywaifu.models.dtos.meta.PagedResponseDTO;
 import com.silvermaiden.mywaifu.models.dtos.user.UserRequestDTO;
 import com.silvermaiden.mywaifu.models.dtos.user.UserDTO;
@@ -55,21 +56,22 @@ public class UserController {
     }
 
     @GetMapping("/paged")
-    public ResponseEntity<ApiResponseDTO<PagedResponseDTO<UserDTO>>> getPaged(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        PagedResponseDTO<UserDTO> res = this.userServiceImpl.getPaged(page, size);
-        return ResponseEntity.ok(ApiResponseDTO.success(res));
-    }
-
-    @GetMapping("/paged/sorted")
     public ResponseEntity<ApiResponseDTO<PagedResponseDTO<UserDTO>>> getPagedSorted(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @Pattern(regexp = "ASC|DESC", flags = Pattern.Flag.CASE_INSENSITIVE)
-            @RequestParam(defaultValue = "ASC") String sortDirection) {
-        PagedResponseDTO<UserDTO> res = this.userServiceImpl.getPagedSorted(page, size, sortBy, sortDirection);
+            @Valid @ModelAttribute PagedRequestDTO params) {
+        PagedResponseDTO<UserDTO> res;
+        if (params.sortBy() != null && params.sortDirection() != null) {
+            res = this.userServiceImpl.getPagedSorted(
+                    params.page(),
+                    params.size(),
+                    params.sortBy(),
+                    params.sortDirection()
+            );
+        } else {
+            res = this.userServiceImpl.getPaged(
+                    params.page(),
+                    params.size()
+            );
+        }
         return ResponseEntity.ok(ApiResponseDTO.success(res));
     }
 }
